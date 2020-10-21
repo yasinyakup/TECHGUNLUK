@@ -6,6 +6,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 
@@ -20,23 +21,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.inMemoryAuthentication()
 		.withUser("tech")
-		.password("tech").roles("USER");
+		.password("tech").roles("ADMIN")
+		.and()
+		.withUser("yasin")
+		.password("yasin").roles("USER");
 	}
 
 	@Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/api/auth/**")
-                .permitAll().antMatchers("/home")
-                .hasRole("USER")
+                .antMatchers("/api/auth/**").permitAll()
                 .anyRequest()
                 .authenticated();
+                
     }
 
     @Bean
     public PasswordEncoder bCryptPasswordEncoder(){
-        return  new BCryptPasswordEncoder();
+        return  NoOpPasswordEncoder.getInstance();
         
     }
+	
+//	@Bean
+//	public PasswordEncoder passwordEncoder() {
+//		return NoOpPasswordEncoder.getInstance();
+//	}
 }

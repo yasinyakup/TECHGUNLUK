@@ -4,7 +4,9 @@ import com.yaytech.techgunluk.model.VerificationToken;
 
 import java.util.Optional;
 
-public interface VerificationTokenRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface VerificationTokenRepository extends JpaRepository<VerificationToken, Long>{
 
     Optional<VerificationToken> findByToken(String token);
 }
