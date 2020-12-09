@@ -1,5 +1,12 @@
 package com.yaytech.techgunluk.service;
 
+import com.yaytech.techgunluk.dto.AuthenticationResponse;
+import com.yaytech.techgunluk.dto.LoginRequest;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +31,7 @@ import javax.transaction.Transactional;
 
 public class AuthService {
 
+	private final AuthenticationManager authenticationManager;
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final VerificationTokenRepository verificationTokenRepository;
@@ -48,16 +56,23 @@ public class AuthService {
 		mailService.sendMail(new NotificationEmail("Please activate your account"
 				,user.getEmail(), message));
 	}
+
+	public AuthenticationResponse login(LoginRequest loginRequest){
+		Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),loginRequest.getPassword()));
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		String authenticationToken = 
+	}
 	
-	public String generateToken(User user) {
+	private String generateToken(User user) {
 		String token = UUID.randomUUID().toString();
 		VerificationToken verificationToken = new VerificationToken();
 		verificationToken.setToken(token);
 		verificationToken.setUser(user);
 		
 		verificationTokenRepository.save(verificationToken);
-		
+
 		return token;
+
 
 	}
 	
@@ -70,14 +85,13 @@ public class AuthService {
 		verificationToken.orElseThrow(()->new TechGunlukException("Invalid token"));
 		
 		fetchUserAndEnable(verificationToken.get());
-		
 	}
 
 	private void fetchUserAndEnable(VerificationToken verificationToken) {
 		
 		String username = verificationToken.getUser().getUsername();
 		User user = userRepository.findByUsername(username).orElseThrow(
-				()-> new TechGunlukException("User not fount with id - "+username));
+				()-> new TechGunlukException("User not found with id - "+username));
 		user.setEnabled(true);
 		userRepository.save(user);
 		
