@@ -35,6 +35,7 @@ public class MainController {
 	@PostMapping("/signup")
 	public ResponseEntity signUp(
 			@RequestBody RegisterRequest registerRequest) {
+		System.out.println("test");
 		authService.signUp(registerRequest);
 		return new ResponseEntity(HttpStatus.OK);
 
