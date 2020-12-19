@@ -30,6 +30,7 @@ public class MainController {
 
 		return ("Welcome to test page!!");
 
+
 	}
 	
 	@PostMapping("/signup")

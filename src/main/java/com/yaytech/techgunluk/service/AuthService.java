@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +25,7 @@ import static java.time.Instant.now;
 import java.util.Optional;
 import java.util.UUID;
 import static com.yaytech.techgunluk.utils.Constants.ACTIVATION_EMAIL;
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
@@ -97,5 +98,16 @@ public class AuthService {
 		user.setEnabled(true);
 		userRepository.save(user);
 		
+	}
+
+	@Transactional(readOnly = true)
+	User getCurrentUser(){
+		org.springframework.security.core.userdetails.User principle =
+				(org.springframework.security.core.userdetails.User)
+				SecurityContextHolder.getContext().getAuthentication()
+				.getPrincipal();
+		return userRepository.findByUsername(principle.getUsername()).orElseThrow(
+				()->new UsernameNotFoundException("User name" +
+						" not found "+principle.getUsername()));
 	}
 }
